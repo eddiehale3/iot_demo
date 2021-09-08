@@ -1,2 +1,4 @@
+src/node_modules/
+
 terraform/.terraform*
 experiment*.json
