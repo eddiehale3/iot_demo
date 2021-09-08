@@ -49,7 +49,7 @@ resource "google_cloudiot_device" "iot-device" {
     credentials {
         public_key {
             format = "RSA_PEM"
-            key = file("../src/certs/rsa_public.pem")
+            key = file("../src/device/certs/rsa_public.pem")
         }
     }
 }
