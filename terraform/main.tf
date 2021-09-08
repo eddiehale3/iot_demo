@@ -2,7 +2,7 @@ terraform {
     required_providers {
         google = {
             source = "hashicorp/google"
-            version = "3.5.0"
+            version = "3.82.0"
         }
     }
 }
@@ -45,4 +45,11 @@ resource "google_cloudiot_registry" "iot-registry" {
 resource "google_cloudiot_device" "iot-device" {
     name = "demo-iot-device"
     registry = google_cloudiot_registry.iot-registry.id
+
+    credentials {
+        public_key {
+            format = "RSA_PEM"
+            key = file("../src/certs/rsa_public.pem")
+        }
+    }
 }

@@ -1,4 +1,4 @@
 src/node_modules/
 terraform/.terraform*
-terraform/terraform.*
+terraform/terraform.tfstate
 experiment*.json
