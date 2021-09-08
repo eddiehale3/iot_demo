@@ -1,13 +1,13 @@
 const credentials = '../experiment-231217-eba99ceda7e5.json'
 const deviceId = `demo-iot-device`;
-const gatewayId = `mygateway`;
 const registryId = `demo-iot-registry`;
 const region = `us-central1`;
 const algorithm = `RS256`;
-const privateKeyFile = `./rsa_private.pem`;
-const serverCertFile = `./roots.pem`;
+const privateKeyFile = `certs/rsa_private.pem`;
+const serverCertFile = `certs/roots.pem`;
 const mqttBridgeHostname = `mqtt.googleapis.com`;
 const mqttBridgePort = 8883;
+const messageType = `events`;
 const numMessages = 5;
 const tokenExpMins = 60;
 const {readFileSync} = require('fs');
@@ -15,7 +15,7 @@ const jwt = require('jsonwebtoken');
 const mqtt = require('mqtt');
 const iot = require('@google-cloud/iot');
 
-const mqttClientId = `projects/${projectId}/locations/${region}/registries/${registryId}/devices/${gatewayId}`;
+const mqttClientId = `projects/${projectId}/locations/${region}/registries/${registryId}/devices/${deviceId}`;
 console.log(`MQTT client id: ${mqttClientId}`);
 
 const connectionArgs = {
@@ -33,14 +33,43 @@ const connectionArgs = {
 const iatTime = parseInt(Date.now() / 1000);
 const client = mqtt.connect(connectionArgs);
 
+// Subscribe to config topic to receive config updates
+client.subscribe(`/devices/${deviceId}/config`, {qos: 1});
+
+// Subscribe to commands topic and all subfolders
+client.subscribe(`/devices/${deviceId}/commands/#`, {qos: 0});
+
+// MQTT topic to publish data
+const mqttTopic = `/devices/${deviceId}/${messageType}`;
+
 client.on('connect', success => {
   if (!success) {
-
+    console.log(`Client not connected`);
   } else if (!publishChainInProgress) {
     console.log('connected');
     
   }
-})
+}); 
+
+client.on('close', () => {
+  console.log('close');
+});
+
+client.on('error', error => {
+  console.log('error: ', error);
+});
+
+client.on('message', (topic, message) => {
+  let messageStr = 'Message received: ';
+  if (topic === `/devices/${deviceId}/config`) {
+    messageStr = 'Config message received: ';
+  } else if (topic.startsWith(`/devices/${deviceId}/commands`)) {
+    messageStr = 'Command message received: ';
+  }
+
+  messageStr += Buffer.from(message, 'base64').toString('ascii');
+  console.log(messageStr);
+});
 
 // const createJwt = (projectId, privateKeyFile, algorithm) => {
 //   const token = {
