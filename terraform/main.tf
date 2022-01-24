@@ -62,11 +62,10 @@ resource "google_storage_bucket" "temp-job-location" {
 resource "google_dataflow_job" "stream-data" {
     name                = "streamingIOTJob"
     template_gcs_path   = "gs://dataflow-templates/latest/PubSub_to_BigQuery"
-    temp_gcs_location   = google_storage_bucket.temp-job-location.name
+    temp_gcs_location   = "gs://${google_storage_bucket.temp-job-location.name}/temp"
     parameters = {
         inputTopic      = google_pubsub_topic.default-telemetry.id
-        outputTableSpec = google_bigquery_table.iot-data.schema
-        #outputDeadletterTable = 
+        outputTableSpec = "${var.projectId}:${google_bigquery_dataset.default.dataset_id}.${google_bigquery_table.iot-data.table_id}"
     }
 }
 
