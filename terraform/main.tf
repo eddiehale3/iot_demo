@@ -67,6 +67,7 @@ resource "google_dataflow_job" "stream-data" {
         inputTopic      = google_pubsub_topic.default-telemetry.id
         outputTableSpec = "${var.projectId}:${google_bigquery_dataset.default.dataset_id}.${google_bigquery_table.iot-data.table_id}"
     }
+    on_delete = "cancel"
 }
 
 resource "google_bigquery_dataset" "default" {
