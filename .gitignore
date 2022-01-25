@@ -1,4 +1,4 @@
-src/device/node_modules/
+**/node_modules/
 terraform/.terraform*
 terraform/terraform*
 terraform/terraform.tfstate
