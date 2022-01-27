@@ -1,7 +1,6 @@
 const {readFileSync} = require('fs');
 const jwt = require('jsonwebtoken');
 const mqtt = require('mqtt');
-// const iot = require('@google-cloud/iot');
 
 const projectId = 'experiment-231217';
 const deviceId = `demo-iot-device`;
@@ -16,6 +15,10 @@ const messageType = `events`;
 
 const mqttClientId = `projects/${projectId}/locations/${region}/registries/${registryId}/devices/${deviceId}`;
 console.log(`MQTT client id: ${mqttClientId}`);
+
+var config = {
+  "increment": true
+}
 
 const createJwt = (projectId, privateKeyFile, algorithm) => {
   const token = {
@@ -57,19 +60,41 @@ client.on('connect', success => {
     console.log(`Client not connected`);
   } else {
     console.log('connected!');
+
+    var data = 0;
     setInterval(() => {
-      const payload = JSON.stringify({
-        'helloThere': 'generalKenobi'
-      })
+      if(config.increment) {
+        data++;
+      } else {
+        data--;
+      }
+
+      const payload = JSON.stringify({ data });
       console.log('Publishing message: ', payload);
       client.publish(mqttTopic, payload, {qos: 1}, err => {
         if (err) {
           console.log(`Error sending message: ${err}`);
         }
       });
-    }, 1000);
+    }, 5000);
   }
 }); 
+
+client.on('message', (topic, message) => {
+  let messageStr = 'Message received: ';
+  if (topic === `/devices/${deviceId}/config`) {
+    const newConfig = JSON.parse(Buffer.from(message, 'base64').toString());
+    console.log('Config message received: ', JSON.stringify(newConfig));
+    // Set new configuration
+    config = newConfig;
+  } else if (topic.startsWith(`/devices/${deviceId}/commands`)) {
+    messageStr = 'Command message received: ';
+
+  }
+
+  messageStr += Buffer.from(message, 'base64').toString('ascii');
+  console.log(messageStr);
+});
 
 client.on('close', () => {
   console.log('close');
@@ -77,16 +102,4 @@ client.on('close', () => {
 
 client.on('error', error => {
   console.log('error: ', error);
-});
-
-client.on('message', (topic, message) => {
-  let messageStr = 'Message received: ';
-  if (topic === `/devices/${deviceId}/config`) {
-    messageStr = 'Config message received: ';
-  } else if (topic.startsWith(`/devices/${deviceId}/commands`)) {
-    messageStr = 'Command message received: ';
-  }
-
-  messageStr += Buffer.from(message, 'base64').toString('ascii');
-  console.log(messageStr);
 });

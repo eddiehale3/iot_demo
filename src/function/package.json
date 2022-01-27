@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/functions-framework": "^2.1.0",
     "@google-cloud/iot": "^2.5.1"
   }
 }

@@ -14,6 +14,9 @@ provider "google" {
     credentials = file("../experiment-231217-eba99ceda7e5.json")
 }
 
+#################
+# IOT RESOURCES #
+#################
 resource "google_pubsub_topic" "default-telemetry" {
     name = "default-telemetry"
 }
@@ -54,6 +57,36 @@ resource "google_cloudiot_device" "iot-device" {
     }
 }
 
+######################
+# FUNCTION RESOURCES #
+######################
+resource "google_storage_bucket" "functions-bucket" {
+    name            = "function-bucket"
+    force_destroy   = true
+}
+
+resource "google_storage_bucket_object" "archive" {
+    name = "function.zip"
+    bucket = google_storage_bucket.functions-bucket.name
+    source = "../src/function"
+}
+
+resource "google_cloudfunctions_function" "function" {
+    name        = "command-function"
+    description = "Sends commands to device"
+    entry_point = "handler"
+    project     = var.projectId
+    runtime     = "nodejs16"
+
+    event_trigger {
+        event_type = "google.pubsub.topic.publish"
+        resource = "${google_pubsub_topic.default-telemetry.name}"
+    }
+}
+
+##################
+# DATA RESOURCES #
+##################
 resource "google_storage_bucket" "temp-job-location" {
     name            = "streaming-iot-dataflow-bucket"
     force_destroy   = true
