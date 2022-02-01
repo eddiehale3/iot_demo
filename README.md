@@ -4,6 +4,10 @@ This project contains an example of streaming IOT data from IoT Core to BigQuery
 
 # Usage
 
+## Architecture
+
+![](/resources/IOT_Core_Device_Stream_Ingest_Demo.png)
+
 ## Requirements
 
 Before using this project, you must ensure the following pre-requisites are fulfilled: 
@@ -17,8 +21,15 @@ Before using this project, you must ensure the following pre-requisites are fulf
 In order to execute this project you must have:
 
 1. A Service Account with roles to [deploy GCP resources](#deploy-gcp-resources) using Terraform.
-    - Documentation on Service Accounts can be found [here](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
-2. A Service Account Key associated with the Service Account from #1. Then update `credentials` under `terraform/main.tf` to point to this file. 
+    - Documentation on Service Accounts [here](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
+    - Roles needed:
+        - roles/bigquery.admin
+        - roles/cloudfunctions.admin
+        - roles/cloudiot.admin
+        - roles/dataflow.admin
+        - roles/pubsub.admin
+        - roles/storage.admin
+2. A Service Account Key associated with the Service Account from #1. Then update `credentials` under `terraform/main.tf` to point to this json file. 
     - [Creating and managing service account keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
 
 
@@ -26,16 +37,15 @@ In order to execute this project you must have:
 
 ## Deploy GCP Resources
 
+1. Build function archive file
+
 ```bash
-cd terraform/
-terraform init
-terraform apply -auto-approve
+make function
 ```
 
-When cloud resources are no longer necessary be sure to tear them down to not incur further charges. 
-
+2. Deploy infrastructure
 ```bash
-terraform destroy
+make infra
 ```
 
 ## Start Test Device
@@ -47,3 +57,11 @@ npm start
 ```
 
 To stop the device use CTRL + C to exit the process. 
+
+## Cleanup
+
+When cloud resources are no longer necessary be sure to tear them down to not incur further charges. 
+
+```bash
+make destroy
+```

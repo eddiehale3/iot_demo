@@ -11,20 +11,21 @@ const region = process.env.REGION ?? 'us-central1';
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-// exports.handler = async (req, res) => {
-//     try {
-//         const projectId = await client.getProjectId();
-//         const devicePath = client.devicePath(projectId, region, registryId, deviceId);
-//         // console.log(`Configuration received: ${JSON.stringify(req.body)}`)
+exports.handler = async (req, res) => {
+    try {
+        const projectId = await client.getProjectId();
+        const devicePath = client.devicePath(projectId, region, registryId, deviceId);
+        const message = req.body;
 
-//         // await sendDeviceConfig(devicePath, req.body);
-//         await listDeviceStates(devicePath);
-//         res.sendStatus(200);
-//     } catch (e) {
-//         console.error(`An error occurred: ${e}`);
-//         res.sendStatus(500);
-//     }
-// }
+        console.log(`Message received: ${message}`)
+        await sendDeviceConfig(devicePath, message);
+
+        res.sendStatus(200);
+    } catch (e) {
+        console.error(`An error occurred: ${e}`);
+        res.sendStatus(500);
+    }
+}
 
 /**
  * Triggered from a message on a Cloud Pub/Sub topic.
@@ -32,17 +33,24 @@ const region = process.env.REGION ?? 'us-central1';
  * @param {!Object} event Event payload.
  * @param {!Object} context Metadata for the event.
  */
-exports.handler = (event, context) => {
-    try {
-        //const projectId = await client.getProjectId();
-        //const devicePath = client.devicePath(projectId, region, registryId, deviceId);
-        const message = Buffer.from(event.data, 'base64')
+// exports.handler = async (event, context) => {
+//     try {
+//         const projectId = await client.getProjectId();
+//         const devicePath = client.devicePath(projectId, region, registryId, deviceId);
+//         const message = JSON.parse(Buffer.from(event.data, 'base64').toString('ascii'));
 
-        console.log(`Configuration received: ${JSON.stringify(message)}`)
-    } catch(e) {
-        console.error(`An error occurred: ${e}`);
-    }
-};
+//         console.log(`Message received: ${message.data}`)
+//         if(message.data > 10) {
+//             console.log('Setting increment to false')
+//             await sendDeviceConfig(devicePath, {increment: false})
+//         } else if(message.data < 1) {
+//             console.log('Setting increment to true')
+//             await sendDeviceConfig(devicePath, {increment: true})
+//         }
+//     } catch(e) {
+//         console.error(`An error occurred: ${e}`);
+//     }
+// };
 
 /**
  * Sends configuration to device
@@ -64,25 +72,5 @@ async function sendDeviceConfig(devicePath, config) {
     } catch(e) {
         console.log(`An error occurred sending device configuration`);
         console.error(e);
-    }
-}
-
-async function listDeviceStates(devicePath) {
-    const [response] = await client.listDeviceStates({name: devicePath});
-    const states = response.deviceStates;
-    if (states.length === 0) {
-        console.log(`No States for device: ${deviceId}`);
-    } else {
-        console.log(`States for device: ${deviceId}`);
-    }
-
-    for (let i = 0; i < states.length; i++) {
-        const state = states[i];
-        console.log(
-            'State:',
-            state,
-            '\nData:\n',
-            state.binaryData.toString('utf8')
-        );
     }
 }

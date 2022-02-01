@@ -55,45 +55,60 @@ client.subscribe(`/devices/${deviceId}/commands/#`, {qos: 0});
 // MQTT topic to publish data
 const mqttTopic = `/devices/${deviceId}/${messageType}`;
 
+// MQTT topic to publish state
+const mqttState = `/devices/${deviceId}/state`;
+
+var data = 0;
 client.on('connect', success => {
   if (!success) {
     console.log(`Client not connected`);
   } else {
     console.log('connected!');
 
-    var data = 0;
     setInterval(() => {
-      if(config.increment) {
-        data++;
-      } else {
-        data--;
-      }
-
-      const payload = JSON.stringify({ data });
-      console.log('Publishing message: ', payload);
-      client.publish(mqttTopic, payload, {qos: 1}, err => {
-        if (err) {
-          console.log(`Error sending message: ${err}`);
+      if(Object.keys(config).length != 0) {
+        if(config.increment) {
+          data++;
+        } else {
+          data--;
         }
-      });
+  
+        const payload = JSON.stringify({ data });
+        console.log('Publishing message: ', payload);
+        client.publish(mqttTopic, payload, {qos: 1}, err => {
+          if (err) {
+            console.log(`Error sending message: ${err}`);
+          }
+        });
+      }
     }, 5000);
   }
 }); 
 
 client.on('message', (topic, message) => {
-  let messageStr = 'Message received: ';
   if (topic === `/devices/${deviceId}/config`) {
-    const newConfig = JSON.parse(Buffer.from(message, 'base64').toString());
-    console.log('Config message received: ', JSON.stringify(newConfig));
-    // Set new configuration
-    config = newConfig;
-  } else if (topic.startsWith(`/devices/${deviceId}/commands`)) {
-    messageStr = 'Command message received: ';
+    const newConfig = Buffer.from(message, 'base64').toString('ascii');
+    if(Object.keys(newConfig) != 0) {
+      console.log('Config message received: ', newConfig);
 
+      // Set new configuration
+      config = JSON.parse(newConfig); 
+      // console.log(`Updated config: ${JSON.stringify(config)}`);
+      
+      // publish state
+      console.log(`Publishing state: ${JSON.stringify(config)}`);
+      client.publish(mqttState, JSON.stringify(config), {qos:1}, err => {
+        if (err) {
+          console.log(`Error sending state: ${err}`);
+        }
+      });
+    }
   }
-
-  messageStr += Buffer.from(message, 'base64').toString('ascii');
-  console.log(messageStr);
+  // } else if (topic.startsWith(`/devices/${deviceId}/commands`)) {
+  //   const command = JSON.parse(Buffer.from(message, 'base64').toString('ascii'));
+  //   console.log(`Command message received: ${JSON.stringify(command)}`);
+  //   if(command.increment) config.increment = command.increment;
+  // }
 });
 
 client.on('close', () => {

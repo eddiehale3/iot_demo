@@ -9,3 +9,7 @@ output "device_registry" {
 output "region" {
     value = var.region
 }
+
+output "function_endpoint" {
+    value = google_cloudfunctions_function.function.https_trigger_url
+}

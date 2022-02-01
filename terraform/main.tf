@@ -60,28 +60,53 @@ resource "google_cloudiot_device" "iot-device" {
 ######################
 # FUNCTION RESOURCES #
 ######################
+
+# Used to add a timestamp to archive object, allowing function deployment updates
+locals {
+    timestamp = formatdate("YYMMDDhhmmss", timestamp())
+}
+
 resource "google_storage_bucket" "functions-bucket" {
-    name            = "function-bucket"
+    name            = "function-bucket-demo-7382917"
     force_destroy   = true
 }
 
 resource "google_storage_bucket_object" "archive" {
-    name = "function.zip"
+    name = "index-${local.timestamp}.zip"
     bucket = google_storage_bucket.functions-bucket.name
-    source = "../src/function"
+    source = "../src/function/function.zip"
 }
 
 resource "google_cloudfunctions_function" "function" {
     name        = "command-function"
     description = "Sends commands to device"
-    entry_point = "handler"
-    project     = var.projectId
     runtime     = "nodejs16"
+    
+    entry_point             = "handler"
+    project                 = var.projectId
+    available_memory_mb     = 128
+    timeout                 = 60
+    source_archive_bucket   = google_storage_bucket.functions-bucket.name
+    source_archive_object   = google_storage_bucket_object.archive.name
+    trigger_http            = true
 
-    event_trigger {
-        event_type = "google.pubsub.topic.publish"
-        resource = "${google_pubsub_topic.default-telemetry.name}"
-    }
+    # event_trigger {
+    #     event_type = "google.pubsub.topic.publish"
+    #     resource = "${google_pubsub_topic.default-telemetry.name}"
+    # }
+}
+
+# IAM entry for all users to invoke the function
+resource "google_cloudfunctions_function_iam_member" "invoker" {
+    depends_on = [
+        google_cloudfunctions_function.function
+    ]
+    project         = google_cloudfunctions_function.function.project
+    region          = google_cloudfunctions_function.function.region
+    cloud_function  = google_cloudfunctions_function.function.name
+
+    role    = "roles/cloudfunctions.invoker"
+    member  = "allUsers"
 }
 
 ##################
@@ -121,26 +146,11 @@ resource "google_bigquery_table" "iot-data" {
     schema = <<EOF
 [
     {
-        "name": "helloThere",
-        "type": "STRING",
+        "name": "data",
+        "type": "INTEGER",
         "mode": "NULLABLE",
-        "description": "Test column to verify schema"
+        "description": "Test data sent by device"
     }
 ]
 EOF
 }
-
-# resource "google_bigquery_table" "deadletter-table" {
-#     dataset_id = google_bigquery_dataset.default.dataset_id
-#     table_id = "deatletter-table"
-
-#     deletion_protection = 
-    
-#     schema = <<EOF
-# [
-#     {
-
-#     }
-# ]
-# EOF
-# }
