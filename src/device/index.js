@@ -58,7 +58,7 @@ const mqttTopic = `/devices/${deviceId}/${messageType}`;
 // MQTT topic to publish state
 const mqttState = `/devices/${deviceId}/state`;
 
-var data = 0;
+var data = 50;
 client.on('connect', success => {
   if (!success) {
     console.log(`Client not connected`);
