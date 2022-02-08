@@ -2,7 +2,7 @@ const {readFileSync} = require('fs');
 const jwt = require('jsonwebtoken');
 const mqtt = require('mqtt');
 
-const projectId = 'experiment-231217';
+const projectId = 'PROJECT_ID';
 const deviceId = `demo-iot-device`;
 const registryId = `demo-iot-registry`;
 const region = `us-central1`;
