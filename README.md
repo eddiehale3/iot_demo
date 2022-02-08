@@ -58,6 +58,18 @@ npm start
 
 To stop the device use CTRL + C to exit the process. 
 
+## Update device 
+
+To make the device start counting in the opposite direction, simply send a POST request to the URL provided by Cloud Functions with the below body:
+
+```json
+{
+    "increment": false
+}
+```
+
+The default device behavior starts at 50 and increments. 
+
 ## Cleanup
 
 When cloud resources are no longer necessary be sure to tear them down to not incur further charges. 
