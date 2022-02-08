@@ -72,7 +72,7 @@ To make the device start counting in the opposite direction, simply send a POST 
 }
 ```
 
-The default device behavior starts at 50 and increments. 
+The default device behavior starts at 50 and increments by 1. 
 
 ## Cleanup
 
