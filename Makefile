@@ -6,7 +6,7 @@ REGION := $(shell terraform output region)
 
 function:
 	@echo 'Compressing function...'
-	@cd src/function && zip -r function.zip . -x "*.DS_Store"
+	@cd src/function && npm i && zip -r function.zip . -x "*.DS_Store"
 
 infra:
 	@echo 'Deploying infrastructure...';
