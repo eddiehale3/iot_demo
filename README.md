@@ -37,6 +37,8 @@ In order to execute this project you must have:
 
 ## Deploy GCP Resources
 
+Before deploying resources, be sure to update PROJECT_ID with your Google Cloud Project ID in `terraform/variables.tf` and update the default region, if necessary. 
+
 1. Build function archive file
 
 ```bash
@@ -49,6 +51,8 @@ make infra
 ```
 
 ## Start Test Device
+
+Before starting the device, be sure to update PROJECT_ID with your Google Cloud Project ID in `src/device/index.js`.  
 
 ```bash
 cd src/device

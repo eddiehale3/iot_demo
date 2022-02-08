@@ -1,5 +1,5 @@
 variable "projectId" {
-    default = "experiment-231217"
+    default = "PROJECT_ID"
     type = string
 }
 
