@@ -1,6 +1,6 @@
 # GCP IOT Core Device Stream Ingest Demo
 
-This project contains an example of streaming IOT data from IoT Core to BigQuery Cloud Pub/Sub and Dataflow. 
+This project contains an example of streaming data from IoT Core to BigQuery using Cloud Pub/Sub and Dataflow. 
 
 # Usage
 
