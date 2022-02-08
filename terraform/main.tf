@@ -11,7 +11,7 @@ provider "google" {
     project = var.projectId
     region  = var.region
 
-    credentials = file("../experiment-231217-eba99ceda7e5.json")
+    credentials = file("../credentials.json")
 }
 
 #################
